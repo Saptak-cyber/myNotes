@@ -1,7 +1,7 @@
 const express = require("express")
 const app = express()
 // Trust proxy so req.ip reflects client IP behind Render/Cloudflare
-app.set('trust proxy', 1)
+// app.set('trust proxy', 1)
 
 const rateLimiter = require("./middleware/rateLimiter.js")
 require('dotenv').config()
@@ -11,11 +11,20 @@ const path = require('path')
 
 const { connectDB } = require("./config/db.js")
 
-if(process.env.NODE_ENV !== "production"){   
-    app.use(cors({
-        origin: "http://localhost:5173",
-    }))
-}
+// if(process.env.NODE_ENV !== "production"){   
+//     app.use(cors({
+//         origin: "http://localhost:5173",
+//     }))
+// }
+
+const devOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000"
+]
+app.use(cors({ origin: devOrigins, credentials: true }))
+app.options("*", cors({ origin: devOrigins, credentials: true }))
+
 app.use(express.json())
 
 const notesRoutes = require("./routes/notesRoutes.js")
