@@ -18,7 +18,8 @@ const { connectDB } = require("./config/db.js")
 const allowedOrigins = [
     "http://localhost:5173", // Local development
     "http://localhost:3000", // Alternative local port
-    "https://my-notes-omega-five.vercel.app" // Remove trailing slash for proper CORS
+    "https://my-notes-omega-five.vercel.app", // Your Vercel domain
+    "https://my-notes-omega-five.vercel.app/" // With trailing slash as backup
 ];
 
 if(process.env.NODE_ENV === "production"){
