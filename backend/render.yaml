@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: notes-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URL
+        sync: false # You'll need to set this in Render dashboard
+      - key: FRONTEND_URL
+        sync: false # You'll set this to your Vercel domain
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false # Set if using Upstash Redis
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false # Set if using Upstash Redis
+    healthCheckPath: /api/notes

@@ -9,11 +9,27 @@ const path = require('path')
 
 const { connectDB } = require("./config/db.js")
 
-if(process.env.NODE_ENV !== "production"){   
-    app.use(cors({
-        origin: "http://localhost:5173",
-    }))
+// if(process.env.NODE_ENV !== "production"){   
+//     app.use(cors({
+//         origin: "http://localhost:5173",
+//     }))
+// }
+// Configure CORS for both development and production
+const allowedOrigins = [
+    "http://localhost:5173", // Local development
+    "http://localhost:3000", // Alternative local port
+    "https://my-notes-omega-five.vercel.app" // Remove trailing slash for proper CORS
+];
+
+if(process.env.NODE_ENV === "production"){
+    // In production, add your Vercel domain to allowed origins
+    allowedOrigins.push(process.env.FRONTEND_URL);
 }
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}))
 app.use(express.json())
 
 const notesRoutes = require("./routes/notesRoutes.js")
@@ -27,12 +43,22 @@ app.use(rateLimiter)
 
 app.use("/api/notes",notesRoutes)
 
-if(process.env.NODE_ENV === "production"){   
-    app.use(express.static(path.join(__dirname,"../frontend/dist")))
-    app.get("*",(req,res)=>{
-        res.sendFile(path.join(__dirname,"../frontend","dist","index.html"))
-    })
-}
+// Add a simple root route for health checks
+app.get("/", (req, res) => {
+    res.json({ 
+        message: "Notes API Server is running!", 
+        status: "healthy",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Add a health check endpoint
+app.get("/health", (req, res) => {
+    res.json({ 
+        status: "healthy",
+        timestamp: new Date().toISOString()
+    });
+});
 
 
 // connectDB(process.env.MONGO_URL)
