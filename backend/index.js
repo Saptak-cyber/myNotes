@@ -11,28 +11,11 @@ const path = require('path')
 
 const { connectDB } = require("./config/db.js")
 
-// if(process.env.NODE_ENV !== "production"){   
-//     app.use(cors({
-//         origin: "http://localhost:5173",
-//     }))
-// }
-// Configure CORS for both development and production
-const allowedOrigins = [
-    "http://localhost:5173", // Local development
-    "http://localhost:3000", // Alternative local port
-    "https://my-notes-omega-five.vercel.app", // Your Vercel domain
-    "https://my-notes-omega-five.vercel.app/" // With trailing slash as backup
-];
-
-if(process.env.NODE_ENV === "production"){
-    // In production, add your Vercel domain to allowed origins
-    allowedOrigins.push(process.env.FRONTEND_URL);
+if(process.env.NODE_ENV !== "production"){   
+    app.use(cors({
+        origin: "http://localhost:5173",
+    }))
 }
-
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}))
 app.use(express.json())
 
 const notesRoutes = require("./routes/notesRoutes.js")
@@ -46,37 +29,16 @@ app.use(rateLimiter)
 
 app.use("/api/notes",notesRoutes)
 
-// Add a simple root route for health checks
-app.get("/", (req, res) => {
-    res.json({ 
-        message: "Notes API Server is running!", 
-        status: "healthy",
-        timestamp: new Date().toISOString()
-    });
-});
+if(process.env.NODE_ENV === "production"){   
+    app.use(express.static(path.join(__dirname,"../frontend/dist")))
+    app.get("*",(req,res)=>{
+        res.sendFile(path.join(__dirname,"../frontend","dist","index.html"))
+    })
+}
 
-// Add a health check endpoint
-app.get("/health", (req, res) => {
-    res.json({ 
-        status: "healthy",
-        timestamp: new Date().toISOString()
-    });
-});
-
-
-// Validate environment variables
-console.log("🔧 Environment check:");
-console.log("- NODE_ENV:", process.env.NODE_ENV);
-console.log("- PORT:", PORT);
-console.log("- MONGO_URL set:", !!process.env.MONGO_URL);
-console.log("- FRONTEND_URL:", process.env.FRONTEND_URL);
 
 connectDB(process.env.MONGO_URL).then(()=>{
     app.listen(PORT,()=>{
-        console.log(`🚀 Server started on port: ${PORT}`)
-        console.log(`📍 Server URL: ${process.env.NODE_ENV === "production" ? `https://mynotes-g3jx.onrender.com` : `http://localhost:${PORT}`}`)
+        console.log("Server started on port:",PORT)
     })
-}).catch((error) => {
-    console.error("💥 Failed to start server:", error);
-    process.exit(1);
 })
