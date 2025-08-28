@@ -28,19 +28,40 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Get initial session and handle OAuth callback
+    // const getInitialSession = async () => {
+    //   try {
+    //     // This automatically processes OAuth tokens in URL
+    //     if (window.location.hash.includes('access_token')) {
+    //         await supabase.auth.exchangeCodeForSession(window.location.hash)
+    //       }
+    //     const { data: { session }, error } = await supabase.auth.getSession()
+    //     console.log('Getting session:', { session: !!session, error })
+        
+    //     if (!error && session) {
+    //       setSession(session)
+    //       setUser(session.user)
+    //       console.log('User authenticated:', session.user.email)
+    //     }
+    //   } catch (error) {
+    //     console.error('Error getting session:', error)
+    //   } finally {
+    //     setLoading(false)
+    //   }
+    // }
     const getInitialSession = async () => {
       try {
-        // This automatically processes OAuth tokens in URL
-        const { data: { session }, error } = await supabase.auth.getSession()
-        console.log('Getting session:', { session: !!session, error })
-        
-        if (!error && session) {
+        if (window.location.hash.includes('access_token')) {
+          await supabase.auth.exchangeCodeForSession(window.location.hash)
+          window.history.replaceState({}, document.title, window.location.pathname)
+        }
+    
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
           setSession(session)
           setUser(session.user)
-          console.log('User authenticated:', session.user.email)
         }
-      } catch (error) {
-        console.error('Error getting session:', error)
+      } catch (err) {
+        console.error('OAuth handling error', err)
       } finally {
         setLoading(false)
       }
