@@ -3,7 +3,7 @@ import axios from "axios";
 // Configure API base URL for different environments
 const BASE_URL = import.meta.env.MODE === "development" 
   ? "http://localhost:5001/api" 
-  : import.meta.env.VITE_API_BASE_URL || "https://mynotes-g3jx.onrender.com/api";
+  : "/api"; // Use Vercel proxy in production
 
 const api = axios.create({
   baseURL: BASE_URL,

@@ -61,12 +61,19 @@ app.get("/health", (req, res) => {
 });
 
 
-// connectDB(process.env.MONGO_URL)
-// app.listen(PORT,()=>{
-//     console.log("Server started on port:",PORT)
-// })
+// Validate environment variables
+console.log("🔧 Environment check:");
+console.log("- NODE_ENV:", process.env.NODE_ENV);
+console.log("- PORT:", PORT);
+console.log("- MONGO_URL set:", !!process.env.MONGO_URL);
+console.log("- FRONTEND_URL:", process.env.FRONTEND_URL);
+
 connectDB(process.env.MONGO_URL).then(()=>{
     app.listen(PORT,()=>{
-        console.log("Server started on port:",PORT)
+        console.log(`🚀 Server started on port: ${PORT}`)
+        console.log(`📍 Server URL: ${process.env.NODE_ENV === "production" ? `https://mynotes-g3jx.onrender.com` : `http://localhost:${PORT}`}`)
     })
+}).catch((error) => {
+    console.error("💥 Failed to start server:", error);
+    process.exit(1);
 })

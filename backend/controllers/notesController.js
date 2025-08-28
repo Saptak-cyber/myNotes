@@ -1,13 +1,23 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const Note = require("../models/Note.js");
 
 async function getAllNotes(req, res) {
   try {
+    console.log("🔍 Fetching all notes...");
+    console.log("📊 MongoDB connection state:", mongoose.connection.readyState);
+    
     const notes = await Note.find().sort({ createdAt: -1 });
+    console.log(`✅ Found ${notes.length} notes`);
+    
     res.status(200).json(notes);
   } catch (err) {
-    console.log("Error in getAllNotes controller", err);
-    res.status(500).json({ message: "Internal Server error" });
+    console.error("❌ Error in getAllNotes controller:", err.message);
+    console.error("Full error:", err);
+    res.status(500).json({ 
+      message: "Internal Server error",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined
+    });
   }
 }
 async function getNotesById(req, res) {
