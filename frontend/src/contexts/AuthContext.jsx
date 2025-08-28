@@ -17,19 +17,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Clean up OAuth tokens from URL immediately
+    if (window.location.hash.includes('access_token')) {
+      console.log('OAuth callback detected, processing tokens...')
+      // Small delay to ensure Supabase processes the tokens first
+      setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname)
+        console.log('URL cleaned up')
+      }, 100)
+    }
+
     // Get initial session and handle OAuth callback
     const getInitialSession = async () => {
       try {
         // This automatically processes OAuth tokens in URL
         const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('Getting session:', { session: !!session, error })
+        
         if (!error && session) {
           setSession(session)
           setUser(session.user)
-          
-          // Clean up URL after OAuth callback
-          if (window.location.hash.includes('access_token')) {
-            window.history.replaceState({}, document.title, window.location.pathname)
-          }
+          console.log('User authenticated:', session.user.email)
         }
       } catch (error) {
         console.error('Error getting session:', error)
