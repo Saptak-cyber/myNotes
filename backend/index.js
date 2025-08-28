@@ -49,8 +49,24 @@ app.use(rateLimiter)
 
 app.use("/api/notes",notesRoutes)
 
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "MyNotes API Server", 
+    status: "running",
+    timestamp: new Date().toISOString()
+  })
+})
+
+app.get("/api", (req, res) => {
+  res.json({ 
+    message: "MyNotes API", 
+    endpoints: ["/api/notes"],
+    status: "running" 
+  })
+})
+
 // Frontend static files served separately on Vercel
-// Remove this section for separate deployments
 
 
 connectDB(process.env.MONGO_URL).then(()=>{

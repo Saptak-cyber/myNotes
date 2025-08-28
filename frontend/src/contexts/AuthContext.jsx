@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, getCurrentSession, signOut as supabaseSignOut } from '../lib/supabase'
+import { supabase, signOut as supabaseSignOut } from '../lib/supabase'
 
 const AuthContext = createContext({})
 
@@ -17,14 +17,25 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
+    // Get initial session and handle OAuth callback
     const getInitialSession = async () => {
-      const { session, error } = await getCurrentSession()
-      if (!error && session) {
-        setSession(session)
-        setUser(session.user)
+      try {
+        // This automatically processes OAuth tokens in URL
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (!error && session) {
+          setSession(session)
+          setUser(session.user)
+          
+          // Clean up URL after OAuth callback
+          if (window.location.hash.includes('access_token')) {
+            window.history.replaceState({}, document.title, window.location.pathname)
+          }
+        }
+      } catch (error) {
+        console.error('Error getting session:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     getInitialSession()
@@ -40,6 +51,14 @@ export const AuthProvider = ({ children }) => {
         // Store session token in localStorage for API calls
         if (session?.access_token) {
           localStorage.setItem('supabase_token', session.access_token)
+          
+          // Show success message for sign in
+          if (event === 'SIGNED_IN') {
+            // Import toast dynamically to avoid issues
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.success(`Welcome back, ${session.user.user_metadata?.full_name || session.user.email}!`)
+            })
+          }
         } else {
           localStorage.removeItem('supabase_token')
         }
