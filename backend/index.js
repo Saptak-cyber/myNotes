@@ -1,5 +1,7 @@
 const express = require("express")
 const app = express()
+// Trust proxy so req.ip reflects client IP behind Render/Cloudflare
+app.set('trust proxy', 1)
 
 const rateLimiter = require("./middleware/rateLimiter.js")
 require('dotenv').config()
