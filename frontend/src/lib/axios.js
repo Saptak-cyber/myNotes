@@ -1,7 +1,14 @@
 import axios from "axios";
 
-// in production, there's no localhost so we have to make this dynamic
-const BASE_URL = import.meta.env.MODE !== "production" ? "http://localhost:5001/api" : "/api";
+// Prefer explicit base URL via env in production deployments (e.g., Vercel)
+// Fallbacks: dev localhost → relative /api for same-origin backends
+const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const isProd = import.meta.env.MODE === "production";
+const BASE_URL = envBaseUrl
+  ? envBaseUrl
+  : isProd
+    ? "/api"
+    : "http://localhost:5001/api";
 
 const api = axios.create({
   baseURL: BASE_URL,
