@@ -22,8 +22,19 @@ const devOrigins = [
     "http://localhost:5174",
     "http://localhost:3000"
 ]
-app.use(cors({ origin: devOrigins, credentials: true }))
-app.options("*", cors({ origin: devOrigins, credentials: true }))
+
+// Configure CORS dynamically: allow dev origins locally, ALLOWED_ORIGINS in production
+const allowedOriginsFromEnv = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean)
+
+const allowedOrigins = process.env.NODE_ENV === "production"
+  ? allowedOriginsFromEnv
+  : devOrigins
+
+app.use(cors({ origin: allowedOrigins, credentials: true }))
+app.options("*", cors({ origin: allowedOrigins, credentials: true }))
 
 app.use(express.json())
 
