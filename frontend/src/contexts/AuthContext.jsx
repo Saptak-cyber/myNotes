@@ -18,14 +18,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Clean up OAuth tokens from URL immediately
-    if (window.location.hash.includes('access_token')) {
-      console.log('OAuth callback detected, processing tokens...')
-      // Small delay to ensure Supabase processes the tokens first
-      setTimeout(() => {
-        window.history.replaceState({}, document.title, window.location.pathname)
-        console.log('URL cleaned up')
-      }, 100)
-    }
+    // if (window.location.hash.includes('access_token')) {
+    //   console.log('OAuth callback detected, processing tokens...')
+    //   // Small delay to ensure Supabase processes the tokens first
+    //   setTimeout(() => {
+    //     window.history.replaceState({}, document.title, window.location.pathname)
+    //     console.log('URL cleaned up')
+    //   }, 100)
+    // }
 
     // Get initial session and handle OAuth callback
     // const getInitialSession = async () => {
@@ -50,16 +50,31 @@ export const AuthProvider = ({ children }) => {
     // }
     const getInitialSession = async () => {
       try {
-        if (window.location.hash.includes('access_token')) {
-          await supabase.auth.exchangeCodeForSession(window.location.hash)
-          window.history.replaceState({}, document.title, window.location.pathname)
-        }
+        // if (window.location.hash.includes('access_token')) {
+        //   await supabase.auth.exchangeCodeForSession(window.location.hash)
+        //   window.history.replaceState({}, document.title, window.location.pathname)
+        // }
     
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          setSession(session)
-          setUser(session.user)
+        // const { data: { session } } = await supabase.auth.getSession()
+        if (window.location.hash.includes('access_token')) {
+          // no exchange for implicit flow
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) { setSession(session); setUser(session.user); }
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (new URLSearchParams(window.location.search).has('code')) {
+          // PKCE/code flow only
+          await supabase.auth.exchangeCodeForSession(window.location.href);
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+        }
+        // if (session) {
+        //   setSession(session)
+        //   setUser(session.user)
+        // }
       } catch (err) {
         console.error('OAuth handling error', err)
       } finally {
